@@ -23,6 +23,7 @@ class Player(Bot):
         Returns:
         Nothing.
         '''
+        print('works :)')
         pass
 
     def handle_new_round(self, game_state, round_state, active):

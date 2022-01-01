@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <title>AlgoPoker Playground</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&amp;display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io.connect('http://127.0.0.1:2000/');
+        var min_raise;
+        var max_raise;
+        var raise_input;
+        const letter_to_class = {
+            'd': 'diamonds',
+            'h': 'hearts',
+            's': 'spades',
+            'c': 'clubs'
+        };
+        const btnList = ['call','raise','check','fold'];
+        const suit_classes = ['diamonds','hearts','spades','clubs','backCard'];
+        socket.on('connect', function() {
+            socket.emit('webpage_connected', {data: 'I\'m connected!'});
+        });
+        socket.on('new_round_state_webpage', function(data) {
+            for (let i = 0; i <5; i++) {
+                card = document.getElementById('boardCard' + i.toString());
+                clearCardClasses(card);
+                card.classList.add('backCard');
+              };
+            document.getElementById('playerBankroll').innerHTML = data.my_bankroll;
+            document.getElementById('opponentBankroll').innerHTML = -data.my_bankroll;
+            var player_left_card = document.getElementById('playerCardLeft');
+            var player_right_card = document.getElementById('playerCardRight');
+            clearCardClasses(player_left_card);
+            player_left_card.innerHTML=data.my_cards[0].charAt(0);
+            player_left_card.classList.add(letter_to_class[data.my_cards[0].charAt(1)]);
+            clearCardClasses(player_right_card);
+            player_right_card.innerHTML=data.my_cards[1].charAt(0);
+            player_right_card.classList.add(letter_to_class[data.my_cards[1].charAt(1)]);
+            var opponent_left_card = document.getElementById('opponentCardLeft');
+            var opponent_right_card = document.getElementById('opponentCardRight');
+            clearCardClasses(opponent_left_card);
+            opponent_left_card.classList.add('backCard');
+            clearCardClasses(opponent_right_card);
+            opponent_right_card.classList.add('backCard');
+            $('#playerNameStack').css("box-shadow" , "none");
+            $('#opponentNameStack').css("box-shadow" , "none");
+        });
+        socket.on('update_round_state_webpage', function(data) {
+            document.getElementById('opponentPips').innerHTML=data.opp_pip;
+            document.getElementById('playerPips').innerHTML=data.my_pip;
+            document.getElementById('opponentStack').innerHTML = data.opp_stack;
+            document.getElementById('playerStack').innerHTML = data.my_stack;
+            min_raise = data.min_raise;
+            max_raise = data.max_raise;
+            document.getElementById('pot_prev').innerHTML=data.pot_size;
+            document.getElementById('pot_total').innerHTML=data.my_pip + data.opp_pip + data.pot_size;
+            for (let i = 0; i < data.board_cards.length; i++) {
+                var card = document.getElementById('boardCard' + i.toString());
+                clearCardClasses(card);
+                card.classList.add(letter_to_class[data.board_cards[i].charAt(1)]);
+                card.innerHTML = data.board_cards[i].charAt(0);
+              };
+            for (let i = 4; i >=data.board_cards.length; i-=1) {
+                card = document.getElementById('boardCard' + i.toString());
+                clearCardClasses(card);
+                card.classList.add('backCard');
+              };
+              console.log(data.legal_actions_list);
+              for (let i = 0; i < btnList.length; i++) {
+                if (data.legal_actions_list.includes(btnList[i])){
+                document.getElementById(btnList[i] + 'Btn').disabled = false;} else {
+                    document.getElementById(btnList[i] + 'Btn').disabled = true;
+                };
+              };
+            UpdateRaiseInput();
+        });
+        socket.on('end_round_state_webpage', function(data) {
+            var opponent_left_card = document.getElementById('opponentCardLeft');
+            var opponent_right_card = document.getElementById('opponentCardRight');
+            if (data.opp_cards.length > 0){
+                clearCardClasses(opponent_left_card);
+                opponent_left_card.innerHTML=data.opp_cards[0].charAt(0);
+                opponent_left_card.classList.add(letter_to_class[data.opp_cards[0].charAt(1)]);
+                clearCardClasses(opponent_right_card);
+                opponent_right_card.innerHTML=data.opp_cards[1].charAt(0);
+                opponent_right_card.classList.add(letter_to_class[data.opp_cards[1].charAt(1)]);
+            };
+            if (data.my_delta >= 0) {
+                $('#playerNameStack').css("box-shadow" , "0px 0px 4px 10px #0ff");
+            };
+            if (data.my_delta <= 0) {
+                $('#opponentNameStack').css("box-shadow" , "0px 0px 4px 10px #0ff");
+            };
+        
+        });
+        function CheckActionWebpage() {
+            socket.emit('CheckActionWebpage');
+            HideRaiseInput();
+        };
+        function FoldActionWebpage() {
+            socket.emit('FoldActionWebpage');
+            HideRaiseInput();
+        };
+        function CallActionWebpage() {
+            socket.emit('CallActionWebpage');
+            document.getElementById('playerPips').innerHTML=document.getElementById('opponentPips').innerHTML;
+            HideRaiseInput();
+        };
+        function ConfirmRaise() {
+            var amount = raise_input.value;
+            if (parseInt(amount) >= parseInt(raise_input.min) && parseInt(amount) <= parseInt(raise_input.max)){
+                socket.emit('ConfirmRaise', {amount});
+                HideRaiseInput();
+        };
+        }
+        function ShowRaiseInput() {
+            document.getElementById("raise_div").style.display = "block";
+            UpdateRaiseInput();
+        };
+        function HideRaiseInput() {
+            document.getElementById("raise_div").style.display = "none";
+            UpdateRaiseInput();
+        };
+        function UpdateRaiseInput() {
+            raise_input.setAttribute("min", min_raise);
+            raise_input.setAttribute("max", max_raise);
+            $('#raise_input').val(min_raise);
+        };
+        function clearCardClasses(card) {
+            for (let j = 0; j < suit_classes.length; j++) {
+                card.classList.remove(suit_classes[j]);
+            };
+            card.innerHTML="";
+        };
+        function halfPotBet(){
+            $('#raise_input').val(Math.min(parseInt(max_raise),Math.max(parseInt(min_raise),Math.round(parseInt(document.getElementById("pot_total").innerHTML)/2))));
+        };
+        function tqPotBet(){
+            $('#raise_input').val(Math.min(parseInt(max_raise),Math.max(parseInt(min_raise),Math.round(parseInt(document.getElementById("pot_total").innerHTML)*3/4))));
+        };
+        function potBet(){
+            $('#raise_input').val(Math.min(parseInt(max_raise),Math.max(parseInt(min_raise),Math.round(parseInt(document.getElementById("pot_total").innerHTML)))));
+        };
+        function allInBet(){
+            $('#raise_input').val(parseInt(max_raise));
+        };
+        $(document).ready(function(){
+        raise_input = document.getElementById("raise_input");
+        });
+    </script>
+    <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+    <div id="indexContainer">
+    <div id="stats">
+        <div id="opponentBox" class="box">
+            <div id="opponentCards" class="cardsContainer">
+                <div id="opponentCardLeft" class="card cardLeft backCard"></div>
+                <div id="opponentCardRight" class="card cardRight backCard"></div>
+            </div>
+            <div id="opponentPips" class="pips"></div>
+            <div id="opponentNameStack" class="nameStack">
+                <p> Bot: <span id='opponentBankroll'></span> </p>
+                <p id="opponentStack"></p>
+            </div>
+        </div>
+        <div id="board">
+            <div id="cardsPipsContainer">
+            <div id="pot"> <div id="pot_prev"></div><div id="pot_total"></div></div>
+            <div id="boardCards">
+                <div id="boardCard0" class="card"></div>
+                <div id="boardCard1" class="card"></div>
+                <div id="boardCard2" class="card"></div>
+                <div id="boardCard3" class="card"></div>
+                <div id="boardCard4" class="card "></div>
+            </div>
+        </div>
+        </div>
+        <div id="playerArea">
+        <div id="playerBox" class="box">
+            
+            <div id="playerCards" class="cardsContainer">
+                <div id="playerCardLeft" class="card cardLeft"></div>
+                <div id="playerCardRight" class="card cardRight"></div>
+            </div>
+            <div id="playerPips" class="pips"></div>
+            <div id="playerNameStack" class="nameStack">
+                <p> Hero: <span id='playerBankroll'></span> </p>
+                <p id="playerStack"></p>
+            
+        </div>
+        
+    </div>
+    <div id="playerActions">
+        <div id="raise_div" style="display: none;">
+            <div><span id="raise_value"></span></div>
+            <input type="number" min="0" max="100" value="0" class="slider" id="raise_input">
+            <button id="halfPotBtn" class="secondaryBtn betSizeBtn" onclick="halfPotBet()">1/2</button>
+            <button id="tqPotBtn" class="secondaryBtn betSizeBtn" betSizeBtn onclick="tqPotBet()">3/4</button>
+            <button id="potBtn" class="secondaryBtn betSizeBtn" onclick="potBet()">Pot</button>
+            <button id="allInBtn" class="secondaryBtn betSizeBtn" onclick="allInBet()">All In</button>
+            <button id="confirm_raise" class = "secondaryBtn" onclick="ConfirmRaise()">Confirm</button>
+        </div>
+        <div>
+        <button id="callBtn" class="secondaryBtn" onclick="CallActionWebpage()">Call</button>
+        <button id="raiseBtn" class="secondaryBtn" onclick="ShowRaiseInput()">Raise</button>
+        <button id="checkBtn" class="secondaryBtn" onclick="CheckActionWebpage()">Check</button>
+        <button id="foldBtn" class="secondaryBtn" onclick="FoldActionWebpage()">Fold</button>
+        </div>
+    </div>
+        </div>
+    </div>
+    
+    </div>
+    
+    </body></html>

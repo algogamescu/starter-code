@@ -1,0 +1,193 @@
+#raise_div {
+    display: none;
+    position:absolute;
+    top:-250%;
+}
+html{
+    background: radial-gradient(#BBBBBB, #444444);
+    background-size: cover;
+    min-height: 100%;
+    font-family: 'Inter', sans-serif;
+}
+#indexContainer {
+    display: flex;
+    flex-direction:column;
+    justify-content: space-around;
+    align-items:center;
+}
+#board {
+    background-image: linear-gradient(to right, #0b6d1d, #127724, #19812a, #1f8c31, #259638, #259638, #259638, #259638, #1f8c31, #19812a, #127724, #0b6d1d);
+    border-radius: 216px;
+    padding: 25px;
+    width: 600px;
+    height: 227px;
+    border-style: solid;
+    border-width: 10px;
+}
+.secondaryBtn{
+    border-radius: 12px;
+    padding: 10px;
+    border: 2px solid #3a3a3a;
+    color: white;
+}
+.secondaryBtn:hover:enabled{
+    filter: brightness(150%);
+    cursor: pointer;
+}
+#checkBtn{
+    background-color: rgb(51, 51, 51);
+}
+#foldBtn{
+    background-color: rgb(105, 4, 4);
+}
+#callBtn{
+    background-color: rgb(41, 94, 10);
+}
+#raiseBtn{
+    background-color: rgb(41, 94, 10);
+}
+.betSizeBtn{
+    background-color: rgb(51, 51, 51);
+}
+.nameStack{
+    width:150px;
+    background-color: rgb(51, 51, 51);
+    color: white;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 18px;
+}
+.cardsContainer{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+#boardCards{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#board{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin-top:20px;
+    margin-bottom:20px;
+}
+.card{
+    background-color: white;
+    border-radius: 10px;
+    width: 55px;
+    height: 85px;
+    border: #FFFFFF;
+    border-style: solid;
+    padding:10px;
+}
+.cardLeft{
+    margin-right:-30px;
+    margin-bottom:-35px;
+    transform: rotate(-7deg);
+    z-index:-2;
+}
+.cardRight{
+    margin-bottom:-35px;
+    transform: rotate(7deg);
+    z-index:-1;
+}
+.diamonds{
+    background: url(Diamonds.png);
+    background-size: 75px;
+    color: #EF5DA8;
+}
+.hearts{
+    background: url(Hearts.png);
+    background-size: 75px;
+    color: #EF5DA8;
+}
+.spades{
+    background: url(Spades.png);
+    background-size: 75px;
+    color: white;
+}
+.clubs{
+    background: url(Clubs.png);
+    background-size: 75px;
+    color: white;
+}
+.backCard{
+    background: url(Back.png);
+    background-size: 75px;
+}
+.box{
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+}
+.pips{
+    background-color: rgb(197, 129, 51);
+    margin-bottom:-10px;
+    z-index:1;
+    width:50px;
+    text-align:center;
+    border-radius:10px;
+}
+#playerArea{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#pot{
+    position:relative;
+    left:30%;
+    top:-40%;
+    width:20%;
+    color:white;
+}
+#pot_prev{
+    position:relative;
+    left:50%;
+    top:40%;
+    background-color: rgb(40 132 10);
+    z-index:1;
+    text-align:center;
+    border-radius:10px;
+    font-size:24px;
+}
+#pot_total{
+    position:relative;
+    margin-top:-40px;
+    left:120%;
+    top:30%;
+    width:80%;
+    background-color: rgb(9 66 18);
+    z-index:1;
+    text-align:center;
+    border-radius:10px;
+    }
+ #playerActions{
+     position:absolute;
+     left:62%;
+     top:80%;
+ }
+ #playerArea{
+     position:relative;
+ }
+ #confirm_raise{
+    background-color: rgb(41, 94, 10);
+ }
+ #callBtn:disabled{
+    background-color: #AAAAAA;
+}
+#raiseBtn:disabled{
+    background-color: #AAAAAA;
+}
+#checkBtn:disabled{
+    background-color: #AAAAAA;
+}
+
+#foldBtn:disabled{
+    background-color: #AAAAAA;
+}
+.secondaryBtn:disabled{
+    color: #444444;
+}
