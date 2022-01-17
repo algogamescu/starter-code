@@ -141,9 +141,9 @@ class Player(Bot):
                 self.actualAction = RaiseAction(data['amount'])
 
         self.sio.emit('player_update_round_state', {
+            'my_bankroll': game_state.bankroll,
             'board_cards': board_cards,
             'my_cards':my_cards,
-            'my_stack': my_stack,
             'opp_stack': opp_stack,
             'my_stack': my_stack,
             'my_pip': my_pip,
@@ -151,7 +151,8 @@ class Player(Bot):
             'min_raise':min_raise,
             'max_raise':max_raise, 
             'pot_size':pot_size,
-            'legal_actions_list':legal_actions_list
+            'legal_actions_list':legal_actions_list,
+            'street': street
         })
         
         return actionLooper()

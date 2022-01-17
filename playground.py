@@ -63,6 +63,15 @@ def player_update_round_state(data):
     playground_last_pushed = ('playground_update_round_state', data) 
     socketio.emit('playground_update_round_state', data)
 
+# Handle the end of a round
+@socketio.on('player_end_round_state')
+def player_end_round_state(data):
+    global playground_last_pushed
+
+    print('[SOCKET] Player ended the round, sent to playground')
+
+    playground_last_pushed = ('player_end_round_state', data)
+    socketio.emit('playground_end_round_state', data)
 
 # @socketio.on('update_round_state')
 # def update_round_state(data):
