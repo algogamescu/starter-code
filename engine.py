@@ -376,9 +376,6 @@ class Game():
         '''
         Runs one game of poker.
         '''
-        '''
-        Runs one game of poker.
-        '''
 
         print('''
 ░█████╗░██╗░░░░░░██████╗░░█████╗░██████╗░░█████╗░██╗░░██╗███████╗██████╗░

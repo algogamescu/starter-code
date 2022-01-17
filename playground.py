@@ -1,4 +1,3 @@
-import webbrowser
 from threading import Timer
 
 from flask import Flask, render_template
@@ -7,51 +6,96 @@ from flask_socketio import SocketIO
 import os
 import time
 import threading
+
 app = Flask(__name__)
-socketio = SocketIO(app)
+
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def hello():
     return render_template('index.html')
 
-def open_browser():
-    webbrowser.open_new('http://127.0.0.1:2000/')
-
 def run_engine():
     os.system("python3 engine.py")
-
-open_browser()
 
 t = threading.Thread(target=run_engine)
 t.daemon = True
 t.start()
-print('got here')
-@socketio.on('connected')
-def connected():
-    print('test 1')
 
-@socketio.on('webpage_connected')
-def connected(message):
-    print('test 2')
-@socketio.on('update_round_state')
-def update_round_state(data):
-    socketio.emit('update_round_state_webpage',data)
-@socketio.on('new_round_state')
-def new_round_state(data):
-    socketio.emit('new_round_state_webpage',data)
-@socketio.on('end_round_state')
-def new_round_state(data):
-    socketio.emit('end_round_state_webpage',data)
-@socketio.on('CheckActionWebpage')
+playground_last_pushed = None
+
+@socketio.on('player_connected')
+def connected():
+    print('[SOCKET] Bot Backend Connected')
+
+@socketio.on('playground_connected')
+def playground_connected():
+    print('[SOCKET] Playground Connected')
+
+# Handle a state refresh
+@socketio.on('playground_request_refresh')
+def playground_request_refresh():
+    global playground_last_pushed
+
+    print('[SOCKET] Playground requested refresh')
+    
+    if playground_last_pushed is not None:
+        print('[SOCKET] Playground provided with refresh', playground_last_pushed)
+        socketio.emit(playground_last_pushed[0], playground_last_pushed[1])
+
+# Handle a new round occuring
+@socketio.on('player_new_round_state')
+def player_new_round_state(data):
+    global playground_last_pushed
+
+    print('[SOCKET] Player given new round, sent to playground')
+
+    playground_last_pushed = ('playground_new_round_state', data) 
+    socketio.emit('playground_new_round_state', data)
+
+# Handle an update in the round state
+@socketio.on('player_update_round_state')
+def player_update_round_state(data):
+    global playground_last_pushed
+
+    print('[SOCKET] Player updated round state, sent to playground')
+
+    playground_last_pushed = ('playground_update_round_state', data) 
+    socketio.emit('playground_update_round_state', data)
+
+
+# @socketio.on('update_round_state')
+# def update_round_state(data):
+#     socketio.emit('update_round_state_webpage',data)
+
+# @socketio.on('new_round_state')
+# def new_round_state(data):
+#     socketio.emit('new_round_state_webpage',data)
+
+# @socketio.on('end_round_state')
+# def new_round_state(data):
+#     socketio.emit('end_round_state_webpage',data)
+
+@socketio.on('playground_act_check')
 def CheckAction():
-    socketio.emit('return_CheckAction', broadcast = True, include_self = False)
-@socketio.on('FoldActionWebpage')
+    socketio.emit('player_act_check', broadcast = True, include_self = False)
+
+@socketio.on('playground_act_fold')
 def FoldAction():
-    socketio.emit('return_FoldAction', broadcast = True, include_self = False)
-@socketio.on('CallActionWebpage')
+    socketio.emit('player_act_fold', broadcast = True, include_self = False)
+
+@socketio.on('playground_act_call')
 def CallAction():
-    socketio.emit('return_CallAction', broadcast = True, include_self = False)
-@socketio.on('ConfirmRaise')
-def ConfirmRaise(data):
-    socketio.emit('return_RaiseAction', data,broadcast = True, include_self = False)
+    socketio.emit('player_act_call', broadcast = True, include_self = False)
+
+# @socketio.on('hydrate')
+# def Hydrate():
+#     print('Hydration Requested')
+#     socketio.emit('hydration_data', broadcast = True, include_self = False)
+#     # socketio.emit('hydrate_action', broadcast = True, include_self = False)
+
+# @socketio.on('ConfirmRaise')
+# def ConfirmRaise(data):
+#     socketio.emit('return_RaiseAction', data,broadcast = True, include_self = False)
+
 socketio.run(app, port=2000)
