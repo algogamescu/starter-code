@@ -1,4 +1,3 @@
-from numpy.random import geometric
 from collections import namedtuple
 from threading import Thread
 from queue import Queue
@@ -6,12 +5,12 @@ import time
 import json
 import subprocess
 import socket
-import eval7
 import sys
 import os
 
 sys.path.append(os.getcwd())
 from config import *
+import handeval
 
 FoldAction = namedtuple('FoldAction', [])
 CallAction = namedtuple('CallAction', [])
@@ -38,11 +37,11 @@ class RoundState(namedtuple('_RoundState', ['button', 'street', 'pips', 'stacks'
         '''
         Compares the players' hands and computes payoffs.
         '''
-        score0 = eval7.evaluate(self.deck.peek(5) + self.hands[0]) #index 0 score
-        score1 = eval7.evaluate(self.deck.peek(5) + self.hands[1]) #index 1 score
-        if score0 > score1:
+        score0 = handeval.evaluate(self.deck.peek(5), self.hands[0]) #index 0 score
+        score1 = handeval.evaluate(self.deck.peek(5), self.hands[1]) #index 1 score
+        if score0 < score1:
             delta = STARTING_STACK - self.stacks[1] #index 0 won, so they get whatever index 1 bet
-        elif score0 < score1:
+        elif score0 > score1:
             delta = self.stacks[0] - STARTING_STACK #index 1 won, so they get whatever index 0 bet
         else:  # split the pot
             delta = (self.stacks[0] - self.stacks[1]) // 2
@@ -352,7 +351,7 @@ class Game():
         Runs one round of poker.
         '''
 
-        deck = eval7.Deck() #fresh deck of cards
+        deck = handeval.Deck() #fresh deck of cards
         deck.shuffle() #shuffle this deck
         hands = [deck.deal(2), deck.deal(2)] #each player gets 2 cards
         pips = [SMALL_BLIND, BIG_BLIND] #first player in list small blind, second player big blind (we sorted out reversing in Game)

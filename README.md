@@ -8,9 +8,6 @@ The command to run the playground is `python3 playground.py`.
 ## Dependencies
 
 - python>=3.5
-- numpy
-- cython (pip install cython)
-- eval7 (pip install eval7)
 - Flask
 - flask_socketio
 - socketio
