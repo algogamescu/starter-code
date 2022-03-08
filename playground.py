@@ -1,19 +1,19 @@
 from threading import Timer
 
-from flask import Flask, render_template
+from flask import Flask, send_from_directory
 from flask import request
 from flask_socketio import SocketIO
 import os
 import time
 import threading
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-@app.route('/')
-def hello():
-    return render_template('index.html')
+@app.route('/<path:path>')
+def send(path):
+    return send_from_directory('static', path)
 
 def run_engine():
     os.system("python3 engine.py")
@@ -91,11 +91,17 @@ def CheckAction():
 
 @socketio.on('playground_act_fold')
 def FoldAction():
+    print('FOLDDDD')
     socketio.emit('player_act_fold', broadcast = True, include_self = False)
 
 @socketio.on('playground_act_call')
 def CallAction():
     socketio.emit('player_act_call', broadcast = True, include_self = False)
+
+@socketio.on('playground_act_raise')
+def CallAction(data):
+    socketio.emit('player_act_raise', broadcast = True, include_self = False, data=data)
+
 
 # @socketio.on('hydrate')
 # def Hydrate():

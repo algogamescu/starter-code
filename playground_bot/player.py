@@ -49,7 +49,7 @@ class Player(Bot):
         self.sio.emit('player_new_round_state', { 
             'my_bankroll': my_bankroll, 
             'round_num': round_num, 
-            'my_cards': my_cards 
+            'my_cards': my_cards
         })
 
     def handle_round_over(self, game_state, terminal_state, active):
@@ -72,7 +72,15 @@ class Player(Bot):
         opp_cards = previous_state.hands[1-active]  # opponent's cards or [] if not revealed
 
         self.finished_showing = False
-        self.sio.emit('player_end_round_state', { 'opp_cards': opp_cards, 'my_delta': my_delta })
+        self.sio.emit('player_end_round_state', { 
+            'opp_cards': opp_cards, 
+            'my_cards': my_cards, 
+            'my_delta': my_delta,
+            'terminal': game_state
+            # 'my_stack': game_state.my_stack,
+            # 'opp_stack': game_state.opp_stack,
+            # 'my_bankroll': game_state.bankroll
+        })
 
         if len(opp_cards) > 0: # wait longer if we are at showdown
             time.sleep(7)
@@ -138,7 +146,12 @@ class Player(Bot):
         @self.sio.on('player_act_raise')
         def player_act_raise(data):
             if RaiseAction in legal_actions:
-                self.actualAction = RaiseAction(data['amount'])
+                try: 
+                    amount = float(data['amount'])
+                    if min_raise <= amount <= max_raise:
+                        self.actualAction = RaiseAction(data['amount'])
+                except ValueError:
+                    pass 
 
         self.sio.emit('player_update_round_state', {
             'my_bankroll': game_state.bankroll,
