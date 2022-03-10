@@ -7,6 +7,8 @@ import os
 import time
 import threading
 
+import logging
+
 app = Flask(__name__, static_url_path='/static')
 
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -18,14 +20,7 @@ def send(path):
 def run_engine():
     os.system("python3 engine.py")
 
-def run_server():
-    os.system("python3 -m http.server --port 8000 --directory static")
-
 t = threading.Thread(target=run_engine)
-t.daemon = True
-t.start()
-
-t2 = threading.Thread(target=run_server)
 t.daemon = True
 t.start()
 
