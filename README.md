@@ -36,7 +36,7 @@ python3 playground.py
 Then in a different terminal window run
 
 ```sh
-python3 -m http.server 8000 --directory playground_bot/statc
+python3 -m http.server 8000 --directory playground_bot/static
 ```
 
 You should then be able to go to [http://localhost:8000](http://localhost:8000) and play against your bot.
