@@ -14,6 +14,13 @@ With that done, once you have the code locally you can install the dependencies 
 pip3 install -r requirements.txt
 ```
 
+If you're on windows you will also need to run
+
+```
+pip3 install gevent-websocket
+pip3 install eventlet
+```
+
 You can then begin developing your bot by editing the `player.py` file in the `starter_bot` folder.
 
 Currently in `starter_bot` is a bot that always raises by the minimum amount.
